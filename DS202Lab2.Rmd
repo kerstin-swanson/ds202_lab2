@@ -1,0 +1,138 @@
+---
+title: "Lab 2 DS 202"
+author: "Kerstin Swanson"
+date: "2/13/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library(forcats)
+```
+
+
+```{r}
+choco <- read.csv("https://raw.githubusercontent.com/xdaiISU/ds202materials/master/hwlabs/data/choco.csv") 
+str(choco) 
+```
+
+## Question 1
+
+```{r}
+choco %>% 
+  ggplot(aes(x=Rating)) + geom_histogram(binwidth = 0.25)
+
+choco %>% 
+  ggplot(aes(x=Rating)) + geom_boxplot() + coord_flip()
+```
+
+
+Based on the histogram and boxplot, it looks like most ratings are between 3 and 3.5. The range of ratings goes from 1 to 4. The median rating looks to be about 3.25, and there are some outliers on the lower end of the ratings. Based on the boxplot, there seems to be four outliers, rated between 1 and 2. 
+
+
+
+## Question 2
+
+```{r}
+choco %>% 
+  ggplot(aes(x=fct_infreq(Location))) +geom_bar() + coord_flip()
+
+```
+
+
+It looks like locations with the most ratings are the USA (by far), France, Canada, and the UK. Places with the least amount of ratings are Wales, Suriname, Martinique, and St. Vincent-Grenadines.
+
+
+## Question 3
+
+```{r, message=FALSE}
+choco$GroupRating[choco$Rating < 1.99] <-  "ones"
+choco$GroupRating[choco$Rating >= 2 & choco$Rating < 3] <- "twos"
+choco$GroupRating[choco$Rating >= 3 & choco$Rating <4] <- "threes"
+choco$GroupRating[choco$Rating == 4] <- "four"
+choco %>% 
+  ggplot(aes(x=factor(GroupRating, levels= c("ones", "twos", "threes", "four")), y=Cocoa_Percent)) + geom_boxplot()
+
+choco %>% 
+  group_by(choco$GroupRating) %>% 
+  summarise(mean_cocoa = mean(Cocoa_Percent))
+
+```
+
+To better answer this question, I made rating a factor, and grouped the responses into overall ratings one, two, three, and four. As we can see in the boxplots, it looks like the chocolates rated in the ones category had the highest median cocoa percent. The ratings went up as median cocoa percent got lower. The top rated chocolates, rated as a 4, had the lowest median cocoa percent, as well as the smallest variability of cocoa percent. This is also supported by the numerical summary, which shows the mean cocoa percent for one-rated chocolate was 84.29%, and four-rated chocolate had a mean cocoa percent of 70.77.
+
+
+## Question 4 
+
+```{r, message=FALSE}
+
+choco %>% 
+  ggplot(aes(x=reorder(Bean_Origin, Rating, median), y=Rating)) + geom_boxplot() + coord_flip()
+
+
+choco %>% 
+  group_by(choco$Bean_Origin) %>% 
+  summarise(mean_rating = mean(Rating)) %>% 
+  arrange(desc(mean_rating))
+
+```
+
+
+
+Yes, taste does seem to differ by bean origin! According to the boxplots of rating by bean origin, it looks that Tobago, Thailand, and Sao Tome & Principe have some of the highest median ratings at about 3.5 or over. According to the boxplot visual, Puerto Rico, Martinique, Principe, and St. Vincent-Grenadines have the lowest median ratings of about 2.75 or lower. This might also be due to the fact that some of these places don't have many ratings recorded. Looking at our numerical summary of mean rating based on bean origin, we see that Tobago, Sao Tome & Principe, and the Solomon islands have the highest mean ratings. This is mostly consistent with our boxplot analysis. 
+
+
+
+## Question 5
+
+
+How do the number of ingredients affect the ratings? Are chocolates with more ingredients rated higher?
+
+```{r, message=FALSE}
+choco$Ingredients <- parse_number(as.character(choco$Ingredients))
+
+choco %>% 
+  ggplot(aes(x=as.factor(Ingredients), y=Rating)) + geom_boxplot() 
+
+
+choco %>% 
+  group_by(Ingredients) %>% 
+  summarise(mean_rating = mean(Rating)) %>% 
+  arrange(desc(mean_rating))
+
+```
+
+
+Here, I wanted to see how the number of ingredients affected the ratings of the chocolates. Looking at the boxplot of ingredients by ratings, we can see that the median rating is pretty consistent across the amount of ingredients, with just a few small differences. It looks like chocolates with 2 or 3 ingredients have the highest median ratings, and chocolate with 6 ingredients has the lowest median rating. Looking at our numerical summary of mean ratings by number of ingredients, we see the same trend. Overall, it seems that chocolates with a moderate amount of ingredients (2-4) are rated more favorably than those with only one or those with 5 or more. 
+
+
+
+
+
+How does the date of the observation affect the rating of the chocolate? Does chocolate seem to be better in a certain timeframe?
+
+```{r, message=FALSE}
+choco %>% 
+  ggplot(aes(x=as.factor(Date), y=Rating)) + geom_boxplot() 
+
+
+choco %>% 
+  group_by(Date) %>% 
+  summarise(mean_rating = mean(Rating)) %>% 
+  arrange(desc(mean_rating))
+```
+
+
+
+Looking at a boxplot of ratings for each year, we can see median ratings are pretty similar across the years. There doesn't seem to be a significant trend over time about chocolate ratings. But, there are a few years that have slight differences. We can see that the median chocolate rating was highest in 2017, and lowest in 2007, 2008, 2009, and 2019. We can also see that some of the earlier years (2006-2012) had some of the lowest rating observations. Looking at our numerical summary of mean ratings by year, we can also see that 2017 seemed to be the best year for chocolate, and 2008 seemed to be the worst. With that being said, these differences are somewhat minor, with the range from best mean rating to worst mean rating being 0.36.
+
+
+
+
+
+
+
+
